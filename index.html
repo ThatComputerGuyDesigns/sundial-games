@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sundial · Daily games for curious minds</title>
+<meta name="description" content="Sundial: 23 free daily puzzles. Word games, logic grids, quick maths and trivia, all new every morning.">
+<meta name="theme-color" content="#fbf8f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12110e" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Sundial · Daily games">
+<meta property="og:description" content="23 fresh puzzles every day. Words, logic, numbers and trivia.">
+<meta property="og:image" content="icons/og.png">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/common.js"></script>
+<script src="js/games.js"></script>
+</head>
+<body class="hub">
+<header class="topbar">
+  <a class="brandlink" href="index.html" aria-label="Sundial home"><script>document.write(SD_LOGO)</script><span class="wordmark">Sundial</span></a>
+  <nav class="nav" aria-label="Main">
+    <a href="index.html" aria-current="page">Today</a>
+    <a href="archive.html">Archive</a>
+    <a href="stats.html" class="hide-s">Stats</a>
+    <button class="ibtn" id="theme" aria-label="Switch light and dark theme"></button>
+  </nav>
+</header>
+
+<main class="wrap" style="max-width:1200px;display:block;padding-bottom:0">
+  <section class="hero">
+    <div class="hello">
+      <div class="kicker"><span id="date"></span><span id="issue"></span></div>
+      <h1 id="greet">Good morning.</h1>
+      <p class="lede" id="lede">Twenty-three fresh puzzles, set at midnight. Words, logic, numbers and trivia, one cup of coffee at a time.</p>
+      <div class="dash">
+        <div class="ring" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><circle class="rbg" cx="50" cy="50" r="42"/><circle class="rfg" id="rfg" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg>
+          <div class="rtxt"><div><b id="rn">0</b><small id="rof">OF 23</small></div></div>
+        </div>
+        <div class="dstats">
+          <div class="dstat"><b id="dstreak"></b><span>Day streak</span></div>
+          <div class="dstat"><b id="dbest">0</b><span>Best streak</span></div>
+          <div class="dstat"><div class="week" id="week" aria-hidden="true"></div><span>This week</span></div>
+        </div>
+        <p class="sr" id="progsr"></p>
+      </div>
+      <div class="cta-row">
+        <a class="btn" id="playnext" href="#">Play next</a>
+        <button class="btn ghost" id="surprise">Surprise me</button>
+      </div>
+    </div>
+    <a class="feature" id="feature" href="#"></a>
+  </section>
+
+  <div class="filters">
+    <div class="chips" role="toolbar" aria-label="Filter games" id="chips"></div>
+  </div>
+  <div id="sections"></div>
+
+  <section class="promo">
+    <div>
+      <h2>Every day is a new edition.</h2>
+      <p>Missed a puzzle? The archive holds every past day for every game. Replays never break your streak.</p>
+    </div>
+    <a class="btn" href="archive.html">Open the archive</a>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <div class="fgrid">
+    <div>
+      <a class="brandlink" href="index.html"><script>document.write(SD_LOGO)</script><span class="wordmark">Sundial</span></a>
+      <p style="margin:0;max-width:26em">Daily games for curious minds. New puzzles arrive at midnight your time. Progress is stored privately on this device: no accounts, no tracking.</p>
+    </div>
+    <div><h4>Words</h4><div id="f-words"></div></div>
+    <div><h4>Logic &amp; numbers</h4><div id="f-logic"></div></div>
+    <div><h4>Knowledge</h4><div id="f-knowledge"></div></div>
+  </div>
+  <div class="fine"><span>© 2026 Sundial. Made for the morning.</span><span><a href="archive.html" style="display:inline">Archive</a> · <a href="stats.html" style="display:inline">Your stats</a></span></div>
+</footer>
+
+<script>
+(function () {
+  var date = PD.maxDate(), G = SD_GAMES, I = PD.icons;
+  var h = new Date().getHours();
+  var greet = h < 5 ? "Up late?" : h < 12 ? "Good <em>morning</em>." : h < 17 ? "Good <em>afternoon</em>." : "Good <em>evening</em>.";
+  document.getElementById("greet").innerHTML = greet;
+  document.getElementById("date").textContent = PD.label(date);
+  document.getElementById("issue").textContent = "Edition No. " + PD.number(date);
+
+  function status(g) { return PD.done(g.id)[date]; }
+  var done = G.filter(status).length;
+  document.getElementById("rn").textContent = done;
+  document.getElementById("rof").textContent = "OF " + G.length;
+  setTimeout(function () { document.getElementById("rfg").style.strokeDashoffset = 264 - 264 * done / G.length; }, 60);
+  document.getElementById("progsr").textContent = done + " of " + G.length + " games finished today";
+  var ds = PD.dayStreak();
+  document.getElementById("dstreak").innerHTML = (ds.cur ? I.flame : "") + ds.cur;
+  document.getElementById("dbest").textContent = ds.max;
+  var log = PD.load("log", {}), wk = "";
+  for (var i = 6; i >= 0; i--) { var d = PD.addDays(date, -i); wk += '<i class="' + (log[d] ? "on" : "") + (i === 0 ? " today" : "") + '" title="' + PD.short(d) + ": " + (log[d] || 0) + ' played"></i>'; }
+  document.getElementById("week").innerHTML = wk;
+  if (done === G.length) document.getElementById("lede").textContent = "Full sweep! Every puzzle solved today. Come back at midnight for a fresh edition.";
+  else if (done > 0) document.getElementById("lede").textContent = "You've finished " + done + " of " + G.length + " today. " + (G.length - done) + " puzzles still waiting for you.";
+
+  var todo = G.filter(function (g) { return !status(g); });
+  var pn = document.getElementById("playnext");
+  if (todo.length) { pn.href = "games/" + todo[0].f + ".html"; pn.innerHTML = (done ? "Continue: " : "Start with ") + todo[0].n + " " + I.arrow; }
+  else { pn.href = "stats.html"; pn.innerHTML = "See your stats " + I.arrow; }
+  document.getElementById("surprise").onclick = function () {
+    var pool = todo.length ? todo : G; location.href = "games/" + pool[Math.floor(Math.random() * pool.length)].f + ".html";
+  };
+
+  /* featured: rotates daily, favours new + unplayed */
+  var feat = G[PD.index(date, G.length) * 7 % G.length];
+  var fe = document.getElementById("feature");
+  fe.href = "games/" + feat.f + ".html";
+  fe.style.setProperty("--fc", feat.col);
+  fe.innerHTML = '<span class="flabel">Today\'s pick</span><div class="fart">' + feat.icon + "</div><h2>" + feat.n + "</h2><p>" + feat.d + "</p>" +
+    (status(feat) ? '<span class="fdone">' + (status(feat) === "w" ? "✓ Solved today" : "Played today") + "</span>" : '<span class="btn">Play ' + feat.n + " " + I.arrow + "</span>");
+
+  function card(g) {
+    var s = status(g), st = PD.liveStreak(g.id);
+    return '<a class="gcard' + (s ? " is-done" : "") + '" href="games/' + g.f + '.html" data-c="' + g.c + '" data-done="' + (s ? 1 : 0) + '" style="--g:' + g.col + '">' +
+      '<div class="art">' + (g.isNew && !s ? '<span class="badge new">New</span>' : "") + (s ? '<span class="donemark' + (s === "w" ? "" : " l") + '" aria-label="' + (s === "w" ? "Solved" : "Played") + '">' + (s === "w" ? "✓" : "–") + "</span>" : "") + g.icon + "</div>" +
+      '<div class="body"><h3>' + g.n + "</h3><p>" + g.d + '</p><div class="meta"><span class="mins">~' + g.t + " min</span>" +
+      (st > 1 ? '<span class="st">' + I.flame + st + "</span>" : "") +
+      '<span class="play">' + (s ? "Review" : "Play") + I.arrow + "</span></div></div></a>";
+  }
+  var html = "";
+  SD_CATS.forEach(function (c) {
+    var gs = G.filter(function (g) { return g.c === c[0]; });
+    var dn = gs.filter(status).length;
+    html += '<section class="sect" data-sect="' + c[0] + '"><div class="sect-h"><h2>' + c[1] + "</h2><p>" + c[2] + '</p><span class="cnt">' + dn + "/" + gs.length + ' done</span></div><div class="cards">' + gs.map(card).join("") + "</div></section>";
+  });
+  document.getElementById("sections").innerHTML = html + '<p class="empty" id="empty" hidden>Nothing left here. Lovely work.</p>';
+
+  var filters = [["all", "All games", G.length], ["todo", "Unplayed", todo.length]].concat(SD_CATS.map(function (c) { return [c[0], c[1], G.filter(function (g) { return g.c === c[0]; }).length]; })).concat([["new", "New", G.filter(function (g) { return g.isNew; }).length], ["quick", "Under 3 min", G.filter(function (g) { return g.t <= 2; }).length]]);
+  var cur = PD.load("hubfilter", "all");
+  var chips = document.getElementById("chips");
+  chips.innerHTML = filters.map(function (f) { return '<button class="chip" data-f="' + f[0] + '" aria-pressed="false">' + f[1] + ' <span class="n">' + f[2] + "</span></button>"; }).join("");
+  function apply(f) {
+    cur = f; PD.save("hubfilter", f);
+    Array.prototype.forEach.call(chips.children, function (b) { b.setAttribute("aria-pressed", b.dataset.f === f); });
+    var any = 0;
+    Array.prototype.forEach.call(document.querySelectorAll(".sect"), function (s) {
+      var vis = 0;
+      Array.prototype.forEach.call(s.querySelectorAll(".gcard"), function (a) {
+        var g = SD_BY_FILE[a.getAttribute("href").replace(/^games\/|\.html$/g, "")];
+        var show = f === "all" || f === g.c || (f === "todo" && a.dataset.done === "0") || (f === "new" && g.isNew) || (f === "quick" && g.t <= 2);
+        a.hidden = !show; if (show) vis++;
+      });
+      s.hidden = !vis; any += vis;
+    });
+    document.getElementById("empty").hidden = !!any;
+  }
+  chips.onclick = function (e) { var b = e.target.closest(".chip"); if (b) apply(b.dataset.f); };
+  apply(cur);
+
+  ["words", "logic", "knowledge"].forEach(function (c) {
+    document.getElementById("f-" + c).innerHTML = G.filter(function (g) { return g.c === c || (c === "logic" && g.c === "numbers"); }).map(function (g) { return '<a href="games/' + g.f + '.html">' + g.n + "</a>"; }).join("");
+  });
+
+  var tb = document.getElementById("theme");
+  function icon() { tb.innerHTML = PD.themeIcon(); }
+  tb.onclick = function () { PD.toggleTheme(); icon(); };
+  icon();
+})();
+</script>
+</body>
+</html>
