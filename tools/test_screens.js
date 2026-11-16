@@ -1,25 +1,21 @@
 const { chromium } = require('playwright');
-const OUT = process.argv[2], W = +(process.argv[3]||430), THEME = process.argv[4]||'light', ONLY = process.argv[5];
-const pages = ['index','archive','stats','games/word','games/mini','games/hive','games/scramble','games/ladder','games/wordscape','games/trifecta','games/fours','games/crowns','games/duo','games/nine','games/pixel','games/sweep','games/outlier','games/target','games/sprint','games/safecracker','games/trivia','games/cinemoji','games/encore','games/flagpole','games/chrono','games/hilo'];
+const OUT = process.argv[2], W = +(process.argv[3] || 390), THEME = process.argv[4] || 'light', ONLY = process.argv[5];
+const ids = ['five','groups','mini','comb','jumble','steps','link','search','crowns','sudoku','balance','pixels','sweeper','code','bullseye','quickfire','higher','quiz','flags','timeline','movies','artist'];
+const routes = ['', 'archive', 'stats'].concat(ids.map(i => 'play/' + i));
 (async () => {
   const b = await chromium.launch();
-  const ctx = await b.newContext({ viewport: { width: W, height: W < 600 ? 860 : 900 }, colorScheme: THEME });
-  await ctx.addInitScript(() => { ['hv','sc','cr','du','nn','px','sw','fo','lb','wsc','tri','lad','tg'].forEach(k=>localStorage.setItem('pd:'+k+':seen','true')); });
-  let errs = [];
-  for (const p of pages) {
-    if (ONLY && !p.includes(ONLY)) continue;
-    const pg = await ctx.newPage();
-    pg.on('pageerror', e => errs.push(p + ': ' + e.message));
-    pg.on('console', m => { if (m.type() === 'error' && !/fonts|flagcdn|ERR_/.test(m.text())) errs.push(p + ' console: ' + m.text()); });
-    await pg.goto('http://127.0.0.1:8765/' + p + '.html', { waitUntil: 'load' });
-    await pg.waitForTimeout(500);
-    await pg.keyboard.press('Escape').catch(()=>{});
-    await pg.waitForTimeout(250);
-    await pg.screenshot({ path: OUT + '/' + p.replace('games/','g_') + '-' + W + '-' + THEME + '.png', fullPage: p.indexOf('games')<0 });
-    const ov = await pg.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
-    if (ov) errs.push(p + ': horizontal overflow');
-    await pg.close();
+  const ctx = await b.newContext({ viewport: { width: W, height: W < 600 ? 844 : 900 }, colorScheme: THEME });
+  await ctx.addInitScript((ids) => { ids.forEach(i => localStorage.setItem('dd:seen:' + i, 'true')); }, ids);
+  const errs = [];
+  for (const r of routes) {
+    if (ONLY && !r.includes(ONLY)) continue;
+    const p = await ctx.newPage();
+    p.on('pageerror', e => errs.push(r + ': ' + e.message));
+    p.on('console', m => { if (m.type() === 'error' && !/fonts|flagcdn|ERR_/.test(m.text())) errs.push(r + ' console: ' + m.text()); });
+    await p.goto('http://127.0.0.1:8766/#/' + r); await p.waitForTimeout(700);
+    await p.screenshot({ path: `${OUT}/${(r || 'home').replace('play/', 'g_')}-${W}-${THEME}.png`, fullPage: r.indexOf('play') < 0 });
+    if (await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)) errs.push(r + ': horizontal overflow');
+    await p.close();
   }
-  console.log(errs.join('\n') || 'no errors');
-  await b.close();
+  console.log(errs.join('\n') || 'no errors'); await b.close();
 })();

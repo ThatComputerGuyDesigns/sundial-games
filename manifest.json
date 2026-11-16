@@ -1,15 +1,15 @@
 {
-  "name": "Sundial: Daily Games",
-  "short_name": "Sundial",
-  "description": "23 fresh puzzles every day. Words, logic, numbers and trivia.",
-  "start_url": "./index.html",
+  "name": "Daily Dose",
+  "short_name": "Daily Dose",
+  "description": "22 daily puzzles, beautifully made.",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#fbf8f2",
-  "theme_color": "#1b1813",
+  "background_color": "#f5f5f7",
+  "theme_color": "#f5f5f7",
   "icons": [
     { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" },
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }

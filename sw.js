@@ -1,17 +1,11 @@
-/* Sundial service worker: network-first so new editions always show, cache as offline fallback */
-var CACHE = "sundial-v1";
-self.addEventListener("install", function (e) { self.skipWaiting(); });
-self.addEventListener("activate", function (e) {
-  e.waitUntil(caches.keys().then(function (ks) { return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); })); }).then(function () { return self.clients.claim(); }));
-});
-self.addEventListener("fetch", function (e) {
+/* Daily Dose service worker: network first, cache fallback for offline play */
+const CACHE = "dailydose-v1";
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (e) => e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())));
+self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
-  e.respondWith(
-    fetch(e.request).then(function (r) {
-      if (r && r.ok && (new URL(e.request.url).origin === location.origin || /fonts\.(googleapis|gstatic)\.com|flagcdn\.com/.test(e.request.url))) {
-        var copy = r.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
-      }
-      return r;
-    }).catch(function () { return caches.match(e.request, { ignoreSearch: true }); })
-  );
+  e.respondWith(fetch(e.request).then((r) => {
+    if (r.ok && (new URL(e.request.url).origin === location.origin || /fonts\.(googleapis|gstatic)\.com|flagcdn\.com/.test(e.request.url))) { const c = r.clone(); caches.open(CACHE).then((x) => x.put(e.request, c)); }
+    return r;
+  }).catch(() => caches.match(e.request, { ignoreSearch: true })));
 });
